@@ -1,0 +1,56 @@
+echo ***************************************
+echo ***** bootloader : u-boot, script.*****
+echo ***** Load uImage, dtb from: tftp.*****
+echo ***** Load rootfs : from NFS.     *****
+echo ***************************************
+
+echo ===========================
+echo ===== U-Boot SETTINGS =====
+echo ===========================
+env default -f -a
+setenv bootdelay 5
+
+echo ======================================
+echo ===== U-Boot: Network parameters =====
+echo ======================================
+setenv ipaddr 192.168.0.96
+setenv serverip 192.168.0.4
+setenv gatewayip 255.255.255.255
+setenv netmask 255.255.255.0
+setenv hostname myBBB
+setenv rootpath /home/abdallah/dev/formation/beyondlogic/dev/target/rootfs
+setenv loadaddr 0x82000000
+setenv loadaddr_dtb 0x80F80000
+setenv loadaddr_Image 0x80008000
+setexpr loadaddr_uImage ${loadaddr_Image} - 0x00000040
+setenv device_tree_b am335x-boneblack.dtb
+setenv uImage uImage-BBB
+
+echo =========================================
+echo ===== U-Boot: Linux Kernel settings =====
+echo =========================================
+setenv bootargs console=ttyO0,115200n8 root=/dev/nfs rw nfsroot=${serverip}:${rootpath} ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:eth0:off
+
+echo ====================================
+echo ===== U-Boot: Ramdisk settings =====
+echo ====================================
+
+echo ===== U-Boot: LOAD Device Tree Blob command =====
+setenv cmd_dtb_load 'tftpboot ${loadaddr_dtb} ${device_tree_b}'
+
+echo ===== U-Boot: LOAD uImage command =====
+setenv cmd_uImage_load 'tftpboot ${loadaddr_uImage} ${uImage}'
+
+echo ===========================
+echo ===== U-Boot: BOOTING =====
+echo ===========================
+setenv cmd_boot_nfs 'bootm ${loadaddr_uImage} - ${loadaddr_dtb}'
+
+setenv cmd_script_update 'tftp ${loadaddr} u-boot_script.img;imi ${loadaddr};source ${loadaddr}'
+setenv cmd_myboot_all 'run cmd_dtb_load;run cmd_uImage_load;run cmd_boot_nfs'
+
+setenv bootcmd run cmd_myboot_all
+saveenv
+echo ==============================
+echo ===== U-Boot: END Script =====
+echo ==============================

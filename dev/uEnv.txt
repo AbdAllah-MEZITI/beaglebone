@@ -1,0 +1,7 @@
+console=ttyO0,115200n8
+ipaddr=192.168.0.96
+serverip=192.168.0.4
+rootpath=/exports/rootfs
+netargs=setenv bootargs console=${console} ${optargs} root=/dev/nfs nfsroot=${serverip}:${rootpath},${nfsopts} rw ip=${ipaddr}:${serverip}:192.168.23.1:255.255.255.0:beaglebone:eth0:none:192.168.23.1
+netboot=echo Booting from network ...; tftp ${loadaddr} ${bootfile}; tftp ${fdtaddr} ${fdtfile}; run netargs; bootz ${loadaddr} - ${fdtaddr}
+uenvcmd=run netboot

@@ -1,0 +1,151 @@
+reference : https://www.twam.info/hardware/beaglebone-black/u-boot-on-beaglebone-black
+
+================
+Compiling U-Boot
+================
+U-Boot has a special image format called uImage.
+It includes parameters such as descriptions, the machine/architecture type, compression type, load address, checksums etc. To make these images, you need to have a mkimage tool that comes part of the U-Boot distribution. 
+
+ $ sudo apt-get install gcc-arm-linux-gnueabihf
+
+ $ git clone git://git.denx.de/u-boot.git && cd u-boot
+ $ make am335x_boneblack_defconfig
+ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- menuconfig
+ set the "setexpr" command in the menuconfig
+ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- -j8
+
+We should get a MLO and u-boot.bin file in the current directory and can copy those onto the boot partition of microSD card.
+
+
+reference : http://wiki.beyondlogic.org/index.php/BeagleBoneBlack_Building_Kernel
+=====================================
+Compiling the BeagleBone Black Kernel
+=====================================
+Here we compile the BeagleBone Black Kernel, and generate an uImage file with a DTB blob:
+
+ $ git clone git://github.com/beagleboard/linux.git && cd linux
+ $ git checkout 4.1
+ 
+ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- bb.org_defconfig
+ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- -j8
+ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- uImage dtbs LOADADDR=0x80008000 -j8
+
+Now we build any kernel modules:
+
+ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- modules -j4
+
+And if you have your rootfs ready, you can install them:
+
+ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- INSTALL_MOD_PATH=/home/abdallah/dev/formation/beyondlogic/dev/target/rootfs modules_install
+
+
+===========
+TFTP Server
+===========
+From the "target" directory, add symbolic links to the kernel images. This way, you can recompile the Kernel and the new image is instantly available without having to move it.
+ $ cd ../target
+ $ cd /tftpboot
+ $ ln -s /home/abdallah/dev/formation/beyondlogic/dev/linux/arch/arm/boot/uImage uImage-BBB
+ $ ln -s /home/abdallah/dev/formation/beyondlogic/dev/linux/arch/arm/boot/dts/am335x-boneblack.dtb am335x-boneblack.dtb
+ 
+Booting from NFS
+ $ mkdir rootfs
+ $ wget http://downloads.angstrom-distribution.org/demo/beaglebone/Angstrom-systemd-image-eglibc-ipk-v2012.12-beaglebone-2013.09.12.rootfs.tar.xz
+ /dev/rootfs$ sudo tar -xJf Angstrom-systemd-image-eglibc-ipk-v2012.12-beaglebone-2013.09.12.rootfs.tar.xz -C ../target/rootfs
+
+At this point you will need to ensure your Kernel modules are present. If not, run the following from your Kernel folder to install the modules on your rootfs: 
+ /dev/linux$ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- INSTALL_MOD_PATH=/home/abdallah/dev/formation/beyondlogic/dev/target/rootfs modules_install
+
+==========
+NFS server
+==========
+To install a NFS server on your Ubuntu development box run:
+
+ $ sudo apt-get install nfs-kernel-server
+
+To export a directory by NFS (Network File System) as your root filesystem, edit your /etc/exports configuration file and add:
+
+/home/abdallah/dev/formation/beyondlogic/dev/target/rootfs *(rw,no_root_squash,no_all_squash,sync,no_subtree_check)
+
+To apply the changes, execute:
+
+ $ sudo service nfs-kernel-server restart
+
+
+u-boot script file
+echo ***************************************
+echo ***** bootloader : u-boot, script.*****
+echo ***** Load uImage, dtb from: tftp.*****
+echo ***** Load rootfs : from NFS.     *****
+echo ***************************************
+
+echo ===========================
+echo ===== U-Boot SETTINGS =====
+echo ===========================
+env default -f -a
+setenv bootdelay 5
+
+echo ======================================
+echo ===== U-Boot: Network parameters =====
+echo ======================================
+setenv ipaddr 192.168.0.96
+setenv serverip 192.168.0.4
+setenv gatewayip 255.255.255.255
+setenv netmask 255.255.255.0
+setenv hostname myBBB
+setenv rootpath /home/abdallah/dev/formation/beyondlogic/dev/target/rootfs
+setenv loadaddr 0x82000000
+setenv loadaddr_dtb 0x80F80000
+setenv loadaddr_Image 0x80008000
+setexpr loadaddr_uImage ${loadaddr_Image} - 0x00000040
+setenv device_tree_b am335x-boneblack.dtb
+setenv uImage uImage-BBB
+
+echo =========================================
+echo ===== U-Boot: Linux Kernel settings =====
+echo =========================================
+setenv bootargs console=ttyO0,115200n8 root=/dev/nfs rw nfsroot=${serverip}:${rootpath} ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}:eth0:off
+
+echo ====================================
+echo ===== U-Boot: Ramdisk settings =====
+echo ====================================
+
+echo ===== U-Boot: LOAD Device Tree Blob command =====
+setenv cmd_dtb_load 'tftpboot ${loadaddr_dtb} ${device_tree_b}'
+
+echo ===== U-Boot: LOAD uImage command =====
+setenv cmd_uImage_load 'tftpboot ${loadaddr_uImage} ${uImage}'
+
+echo ===========================
+echo ===== U-Boot: BOOTING =====
+echo ===========================
+setenv cmd_boot_nfs 'bootm ${loadaddr_uImage} - ${loadaddr_dtb}'
+
+setenv cmd_script_update 'tftp ${loadaddr} u-boot_script.img;imi ${loadaddr};source ${loadaddr}'
+setenv cmd_myboot_all 'run cmd_dtb_load;run cmd_uImage_load;run cmd_boot_nfs'
+
+setenv bootcmd run cmd_myboot_all
+saveenv
+echo ==============================
+echo ===== U-Boot: END Script =====
+echo ==============================
+
+old value of bootcmd : bootcmd=run findfdt; run distro_bootcmd
+
+ $ mkimage -T script -C none -n 'u-boot Script File' -d u-boot_script.txt u-boot_script.img
+ $ cp u-boot_script.img /tftpboot/
+
+================
+board connection
+================
+ $ sudo picocom -b 115200 /dev/ttyUSB0
+ $ sudo screen /dev/ttyUSB0 115200
+
+===================
+from u-boot console
+===================
+ => setenv loadaddr 0x82000000
+ => tftp ${loadaddr} u-boot_script.img
+ => imi ${loadaddr} (checking)
+ => source ${loadaddr} (executing)
+ => run cmd_script_update
