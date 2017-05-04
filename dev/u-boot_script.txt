@@ -18,7 +18,7 @@ setenv serverip 192.168.0.4
 setenv gatewayip 255.255.255.255
 setenv netmask 255.255.255.0
 setenv hostname myBBB
-setenv rootpath /home/abdallah/dev/formation/boards/beaglebone/dev/target/rootfs
+setenv rootpath /home/abdallah/dev/formation/boards/beaglebone/dev/buildroot/output/images/rootfs
 setenv loadaddr 0x82000000
 setenv loadaddr_dtb 0x80F80000
 setenv loadaddr_Image 0x80008000

@@ -79,6 +79,8 @@ From the "tftpboot" directory, add symbolic links to the kernel images. This way
 ====================
 RootFs from NFS-Root (for the RootFs)
 ====================
+using Angstrom distribution
+---------------------------
  $ cd /home/abdallah/dev/formation/boards/beaglebone/dev
  $ mkdir rootfs
  $ cd rootfs
@@ -88,6 +90,22 @@ RootFs from NFS-Root (for the RootFs)
 At this point you will need to ensure your Kernel modules are present. If not, run the following from your Kernel folder to install the modules on your rootfs: 
  $ cd ../linux
  $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- INSTALL_MOD_PATH=/home/abdallah/dev/formation/boards/beaglebone/dev/target/rootfs modules_install
+ 
+using buildroot
+---------------
+ $ git clone git://git.busybox.net/buildroot && cd buildroot
+ $ git checkout -b amlabs 2016.05
+ $ make menuconfig
+ $ cp ../buildroot-beaglebone.cfg .config
+ $ make 2>&1 | tee build.log
+
+If you want to run the target filesystem inside a chroot, or as an NFS root, then use the tarball image generated in images/ and extract it as root.
+ $ sudo -i
+ $ cd /home/abdallah/dev/formation/boards/beaglebone/dev/buildroot/output/images/
+ $ mkdir rootfs
+ $ tar -C ./rootfs -xf rootfs.tar
+ 
+ then in /etc/exports and u-boot script files set the wright path to the NFS-Root 
 
 ==========
 NFS server
@@ -98,7 +116,7 @@ To install a NFS server on your Ubuntu development box run:
 
 To export a directory by NFS (Network File System) as your root filesystem, edit your /etc/exports configuration file and add:
 
-/home/abdallah/dev/formation/boards/beaglebone/dev/target/rootfs *(rw,no_root_squash,no_all_squash,sync,no_subtree_check)
+/home/abdallah/dev/formation/boards/beaglebone/dev/buildroot/output/images/ *(rw,no_root_squash,no_all_squash,sync,no_subtree_check)
  $ sudo emacs /etc/export &
 
 To apply the changes, execute:
@@ -128,7 +146,7 @@ setenv serverip 192.168.0.4
 setenv gatewayip 255.255.255.255
 setenv netmask 255.255.255.0
 setenv hostname myBBB
-setenv rootpath /home/abdallah/dev/formation/boards/beaglebone/dev/target/rootfs
+setenv rootpath /home/abdallah/dev/formation/boards/beaglebone/dev/buildroot/output/images/
 setenv loadaddr 0x82000000
 setenv loadaddr_dtb 0x80F80000
 setenv loadaddr_Image 0x80008000
@@ -176,7 +194,15 @@ old value of bootcmd : bootcmd=run findfdt; run distro_bootcmd
 ================
 board connection
 ================
+  Board       Wire    Function
+  Pin 1.....Black.....Ground
+  Pin 4.....Green.....Receive
+  Pin 5.....White....Transmit
+
+re-un/plug the USB cable
+
  $ sudo picocom -b 115200 /dev/ttyUSB0
+or
  $ sudo screen /dev/ttyUSB0 115200
 
 ===================
