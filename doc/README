@@ -22,8 +22,29 @@ To make these images, you need to have a mkimage tool that comes part of the U-B
  set the "setexpr" command in the menuconfig->Shell scripting commands
  $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- -j8
 
+===========================
+Formatting the microSD card
+===========================
 We should get a MLO and u-boot.bin file in the current directory and can copy those onto the boot partition of microSD card.
+use the script for  :  https://github.com/beagleboard/meta-beagleboard/blob/master/contrib/bone-flash-tool/mkcard.sh
+with some modifications:
 
+# sfdisk reads lines of the form : <start> <size> <id> <bootable>
+{
+echo ,63MiB,0x0C,*
+echo ,,,-
+} | sfdisk $DRIVE
+
+#if [ -x /sbin/kpartx ]; then
+#	kpartx -a -v ${DRIVE}
+#fi
+
+
+ $ git clone https://github.com/beagleboard/meta-beagleboard.git
+ $ chmod +x meta-beagleboard/contrib/bone-flash-tool/mkcard.sh
+ $ sudo ./meta-beagleboard/contrib/bone-flash-tool/mkcard.sh /dev/sdb
+ or
+ $ sudo ./dev/tools/mkcard.sh /dev/sdd
 
 reference : http://wiki.beyondlogic.org/index.php/BeagleBoneBlack_Building_Kernel
 =====================================
