@@ -1,7 +1,8 @@
 #! /bin/sh
-# mkcard.sh v0.5
+# mkcard.sh v0.6
 # (c) Copyright 2009 Graeme Gregory <dp@xora.org.uk>
 # (c) Copyright 2013 Koen Kooi <koen@dominion.thruhere.net>
+# (c) Copyright 2017 AbdAllah MEZITI <abdallah.meziti.pro@gmail.com>
 # Licensed under terms of GPLv2
 #
 # Parts of the procudure base on the work of Denys Dmytriyenko
