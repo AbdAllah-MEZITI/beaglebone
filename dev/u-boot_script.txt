@@ -2,6 +2,7 @@ echo ***************************************
 echo ***** bootloader : u-boot, script.*****
 echo ***** Load uImage, dtb from: tftp.*****
 echo ***** Load rootfs : from NFS.     *****
+echo ***** version : 1.0.0             *****
 echo ***************************************
 
 echo ===========================

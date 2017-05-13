@@ -104,7 +104,9 @@ If you want to run the target filesystem inside a chroot, or as an NFS root, the
  $ cd /home/abdallah/dev/formation/boards/beaglebone/dev/buildroot/output/images/
  $ mkdir rootfs
  $ tar -C ./rootfs -xf rootfs.tar
- 
+ or 
+ $ chown -R root:root rootfs
+
  then in /etc/exports and u-boot script files set the wright path to the NFS-Root 
 
 ==========
@@ -187,6 +189,11 @@ old value of bootcmd : bootcmd=run findfdt; run distro_bootcmd
 
  $ mkimage -T script -C none -n 'u-boot Script File' -d u-boot_script.txt u-boot_script.img
  $ cp u-boot_script.img /tftpboot/
+ or
+ $ cd /tftpboot
+ $ ln -s /home/abdallah/dev/formation/boards/beaglebone/dev/u-boot_script.img u-boot_script.img
+
+on SD-CARD
  $ sudo cp u-boot/MLO /media/abdallah/boot/
  $ sudo cp u-boot/u-boot.img /media/abdallah/boot/
  $ sudo cp uEnv.txt /media/abdallah/boot/
@@ -214,4 +221,44 @@ from u-boot console
  => source ${loadaddr} (executing)
  => run cmd_script_update
  => reset
+
+=======
+barebox
+=======
+ref : http://www.barebox.org/doc/latest/user/user-manual.html
+ 
+ $ git clone git://git.pengutronix.de/git/barebox.git
+ $ make [ARCH=arm] help
+ 
+ $ export ARCH=arm
+ $ export CROSS_COMPILE=arm-linux-gnueabi-
+
+ $ export KBUILD_OUTPUT=build_dir
+ 
+ $ make am335x_mlo_defconfig
+ $ make menuconfig
+ $ make -j8
+ or
+ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- am335x_mlo_defconfig
+ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- am335x_defconfig
+ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- menuconfig
+ $ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- -j8
+
+
+# $ cp images/start_am33xx_beaglebone_sram.pblx.mlo $CARD/MLO
+ 
+# $ make am335x_beaglebone_defconfig
+# $ make -j8
+# $ cp barebox.bin $CARD/barebox.bin
+
+ $ cd /tftpboot
+ $ ln -s /home/abdallah/dev/formation/boards/beaglebone/dev/barebox/build_dir/images/barebox-am33xx-beaglebone.img barebox-am33xx-beaglebone.img
+
+barebox binaries are, where possible, designed to be startable second stage from another bootloader.
+For example, if you have U-Boot running on your board, you can start barebox with U-Boot’s ‘go’ command:
+
+ => tftp ${loadaddr} barebox-am33xx-beaglebone.img
+ => go ${loadaddr}
+
+
  
