@@ -5,8 +5,7 @@
 ################################################################################
 
 LED_FLASH_MODULE_VERSION     = 1.0.0
-LED_FLASH_MODULE_SITE        = git://github.com/cpb-/led_flash-module.git
-#LED_FLASH_MODULE_SITE        = $(call github,cpb-,led_flash-module,$(LED_FLASH_MODULE_VERSION))
+LED_FLASH_MODULE_SITE        = https://github.com/AbdAllah-MEZITI/beaglebone/tree/master/dev/buildroot/package/khaymatec/ledflash.git
 LED_FLASH_MODULE_SITE_METHOD = git
 LED_FLASH_MODULE_DEPENDENCIES = linux
 
