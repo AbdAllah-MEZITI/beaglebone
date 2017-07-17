@@ -1,0 +1,7 @@
+config BR2_PACKAGE_LED_FLASH_MODULE
+       bool "Led flash module"
+       depends on BR2_LINUX_KERNEL
+       help
+	Kernel module to support LED flash.
+comment "LED flash module requires a linx kernel to be built"
+	depends on !BR2_LINUX_KERNEL
