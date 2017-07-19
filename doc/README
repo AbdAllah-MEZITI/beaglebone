@@ -103,7 +103,7 @@ If you want to run the target filesystem inside a chroot, or as an NFS root, the
  $ sudo -i
  $ cd /home/abdallah/dev/formation/boards/beaglebone/dev/buildroot/output/images/
  $ mkdir rootfs
- $ tar -C ./rootfs -xf rootfs.tar
+ $ sudo tar -C ./rootfs -xf rootfs.tar
  or 
  $ chown -R root:root rootfs
 
@@ -119,7 +119,7 @@ To install a NFS server on your Ubuntu development box run:
 To export a directory by NFS (Network File System) as your root filesystem, edit your /etc/exports configuration file and add:
 
 /home/abdallah/dev/formation/boards/beaglebone/dev/buildroot/output/images/ *(rw,no_root_squash,no_all_squash,sync,no_subtree_check)
- $ sudo emacs /etc/export &
+ $ sudo emacs /etc/exports &
 
 To apply the changes, execute:
 
@@ -148,7 +148,7 @@ setenv serverip 192.168.0.4
 setenv gatewayip 255.255.255.255
 setenv netmask 255.255.255.0
 setenv hostname myBBB
-setenv rootpath /home/abdallah/dev/formation/boards/beaglebone/dev/buildroot/output/images/
+setenv rootpath /home/abdallah/dev/formation/boards/beaglebone/dev/buildroot/output/images/rootfs
 setenv loadaddr 0x82000000
 setenv loadaddr_dtb 0x80F80000
 setenv loadaddr_Image 0x80008000

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+#
+# Start the application
+#
+
+echo "The Eudyptula Task-15 script start now."
+
+echo "Hi, $USER!"
+
+
+    eudyptula
+    sleep 1s
+
+echo "End of the Eudyptula Task-15 script"
